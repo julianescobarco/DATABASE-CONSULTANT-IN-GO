@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/Styles/styles.css">
+</head>
+<body>
+    <!--Project ZinSearch view-->
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/vue-toasted@1.1.28/./dist/vue-toasted.min.js"></script>
+    <div id="app"></div>
+
+    <script>
+       const app = Vue.createApp({
+        data(){
+            return {
+                informacion: [],
+                bodyMail:[{
+                    "title":"",
+                    "body":""
+                }]
+            };
+        },
+        computed:{
+        },
+        provide:{
+            text: "Mamuro Email"
+
+        },
+        methods: {
+            async getInfo(){
+                let dato = document.getElementById("dato").value;
+                const duration = {} ;
+                var informacion = []
+                const response = await  axios.get("http://localhost:3000/" +dato)
+                
+                for (const i of response.data.hits.hits) {
+                    body = i._source.Body
+                    to = i._source.To
+                    subject = i._source.Subject
+                    from = i._source.From
+                    informacion.push({"body": body, "to": to, "subject": subject, "from": from})
+                }
+                this.informacion = informacion
+                console.log(informacion)
+            },
+            changemsj(i) {
+                bodymsj = JSON.parse(JSON.stringify(i))
+                this.bodymsj = bodymsj
+                this.bodyMail[0].title = this.bodymsj.subject
+                this.bodyMail[0].body = this.bodymsj.body
+            }     
+        },
+        template:`
+        <div class="box">
+            <form name="search">
+                <input type="text" id="dato"
+                class="input" name="txt"
+                placeholder="Search.."
+                >
+            </form>
+            <i class="fas fa-search"></i>
+            <input class="butt" v-on:click.native="getInfo" type="submit" value="Send" />
+        </div>
+            <v-navbar />
+            <div class="bodymail">
+                <div Class="tbdiv">
+                    <table id="table">
+                        <thead>
+                        <tr>
+                            <th><a href="#" class="sort-by">Subject</a></th>
+                            <th><a href="#" class="sort-by">from</a></th>
+                            <th><a href="#" class="sort-by">To</a></th>
+                        </tr>
+                        </thead>
+                        <tr v-for="(item, i) in informacion" :key="item.id" v-on:click="changemsj(item)">                
+                            <td>{{ item.subject }}</td>
+                            <td>{{ item.from }}</td>
+                            <td>{{ item.to }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div v-for="p in bodyMail" Class="parrafo">
+                    <h1 id="tituloEmail">{{ p.title }}</h1>
+                    <p id="parrafoEmail">{{ p.body  }}</p>        
+                </div>
+            </div>
+
+        `
+        });
+
+    app.component("v-navbar", {
+        inject: ["text"],
+        template:`
+        <div class="bar">
+           <img class="imag" alt="logo" src="/images/mamuro.jpg">
+           <h1 Class="h1">{{ text }}</h1>
+        </div>
+        `
+    })
+
+    const vm = app.mount("#app");
+   </script>
+</body>
+</html>
+
